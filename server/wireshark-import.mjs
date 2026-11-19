@@ -1,6 +1,8 @@
 // Converts a TShark/Wireshark tab-separated field export into the project's redacted evidence CSV.
 // It imports metadata only; packet payloads are neither requested nor parsed.
-import { parseCsvLine, validateObservationsCsv } from "./protocol-observations.mjs";
+import { pathToFileURL } from "node:url";
+import { resolve } from "node:path";
+import { validateObservationsCsv } from "./protocol-observations.mjs";
 
 const OUTPUT_COLUMNS = [
   "capture_id", "game_build", "title_id", "media_id", "title_update",
@@ -105,7 +107,7 @@ export function importWiresharkTsv(tsv, metadata = {}) {
       tls_certificate_fingerprint: "",
       evidence_label: evidenceLabel,
       outcome: metadata.outcome.trim(),
-      notes_redacted: "Imported from TShark fields export; packet payload excluded."
+      notes_redacted: "Imported from TShark fields export; epoch timestamp normalized to UTC; packet payload excluded."
     };
     rows.push(OUTPUT_COLUMNS.map(column => output[column]));
   }
@@ -119,7 +121,7 @@ export function importWiresharkTsv(tsv, metadata = {}) {
   return { csv, rowsImported: rows.length, columns: [...OUTPUT_COLUMNS] };
 }
 
-if (import.meta.url === "file://" + process.argv[1]) {
+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const chunks = [];
   for await (const chunk of process.stdin) chunks.push(chunk);
   const tsv = Buffer.concat(chunks).toString("utf8");
