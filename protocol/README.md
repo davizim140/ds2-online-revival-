@@ -25,3 +25,16 @@ Record DNS names, destination IPs, ports, transport, connection timing, TLS meta
 ## Acceptance rule
 
 A hostname, port, or message format becomes a project fact only after a repeatable capture is tied to a recorded Xbox 360 build and the observation is independently reviewed. A PC/SotFS source is background research, not Xbox 360 evidence.
+
+
+## Automated CSV validation
+
+The repository includes `server/protocol-observations.mjs`, a local validator for this CSV format. It checks required context fields, row width, timestamp parsing, evidence labels, destination port range, and TCP/UDP transport values.
+
+Run the checks with Node.js 22:
+
+```sh
+node --test server/*.test.mjs
+```
+
+The validator does not create observations, infer server endpoints, or prove that a destination belongs to Dark Souls II. The template remains header-only until real console evidence is collected.
