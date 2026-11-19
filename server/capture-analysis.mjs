@@ -34,6 +34,31 @@ export function analyzeCaptureCsv(csv) {
     return { ...item, evidenceLabels: [...item.evidenceLabels].sort(), actions: [...item.actions].sort(),
       outcomes: [...item.outcomes].sort(), firstSeen: item.timestamps[0] ?? null, lastSeen: item.timestamps.at(-1) ?? null };
   });
+  const actionGroups = new Map();
+  for (const row of rows) {
+    if (!row.action || !(row.destination_ip || row.dns_query || row.transport_stream_id)) continue;
+    const key = [row.capture_id, row.action, row.transport, row.transport_stream_id,
+      row.dns_query, row.destination_ip, row.destination_port].join("|");
+    let item = actionGroups.get(key);
+    if (!item) {
+      item = { captureId: row.capture_id, action: row.action, transport: row.transport || null,
+        streamId: row.transport_stream_id || null, dnsQuery: row.dns_query || null,
+        destinationIp: row.destination_ip || null, destinationPort: row.destination_port || null,
+        observations: 0, evidenceLabels: new Set(), outcomes: new Set(), timestamps: [] };
+      actionGroups.set(key, item);
+    }
+    item.observations++;
+    if (row.evidence_label) item.evidenceLabels.add(row.evidence_label);
+    if (row.outcome) item.outcomes.add(row.outcome);
+    if (row.local_timestamp) item.timestamps.push(row.local_timestamp);
+  }
+  const actionCorrelations = [...actionGroups.values()].map(item => {
+    item.timestamps.sort();
+    return { ...item, evidenceLabels: [...item.evidenceLabels].sort(),
+      outcomes: [...item.outcomes].sort(), firstSeen: item.timestamps[0] ?? null,
+      lastSeen: item.timestamps.at(-1) ?? null };
+  });
+
   const streams = new Map();
   for (const row of rows) {
     const streamId = row.transport_stream_id;
@@ -56,10 +81,13 @@ export function analyzeCaptureCsv(csv) {
     item.timestamps.sort();
     return { ...item, sourceEndpoints: [...item.sourceEndpoints].sort(),
       destinationEndpoints: [...item.destinationEndpoints].sort(), tcpFlags: [...item.tcpFlags].sort(),
+      actions: [...new Set(rows.filter(row => row.capture_id === item.captureId && row.transport === item.transport && row.transport_stream_id === item.streamId).map(row => row.action).filter(Boolean))].sort(),
+      outcomes: [...new Set(rows.filter(row => row.capture_id === item.captureId && row.transport === item.transport && row.transport_stream_id === item.streamId).map(row => row.outcome).filter(Boolean))].sort(),
       firstSeen: item.timestamps[0] ?? null, lastSeen: item.timestamps.at(-1) ?? null };
   });
   return {
     rowsAnalyzed: rows.length, endpointCount: endpointList.length, endpoints: endpointList,
+    actionCorrelationCount: actionCorrelations.length, actionCorrelations,
     connectionCount: connectionList.length, connections: connectionList,
     evidenceCounts: Object.fromEntries(["observed","correlated","hypothesis","rejected"].map(label =>
       [label, rows.filter(row => row.evidence_label === label).length])),
