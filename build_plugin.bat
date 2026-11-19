@@ -12,18 +12,14 @@ if not defined XEDK (
 )
 
 set "BINARYPATH=%XEDK%\bin\win32"
-set "INCLUDE=%XEDK%\include\xbox;%~dp0third_party\xkelib\include"
-set "LIB=%XEDK%\lib\xbox;%~dp0third_party\xkelib\lib"
+set "INCLUDE=%XEDK%\include\xbox"
+set "LIB=%XEDK%\lib\xbox"
 
 if not exist "%BINARYPATH%\cl.exe" exit /b 1
 if not exist "%BINARYPATH%\link.exe" exit /b 1
 if not exist "%BINARYPATH%\imagexex.exe" exit /b 1
 if not exist "%SOURCEFILE%" (
     echo ERROR: Source file missing: %SOURCEFILE%
-    exit /b 1
-)
-if not exist "%~dp0third_party\xkelib\lib\xkelib.lib" (
-    echo ERROR: third_party\xkelib\lib\xkelib.lib is missing.
     exit /b 1
 )
 
@@ -38,7 +34,7 @@ if not exist "%OBJECTFILE%" (
 )
 
 echo [2/3] Linking Xbox 360 DLL...
-"%BINARYPATH%\link.exe" /ERRORREPORT:PROMPT /OUT:"%BUILD_DIR%\%OUTNAME%.exe" /INCREMENTAL:NO /NOLOGO xkelib.lib xapilib.lib xboxkrnl.lib /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"%BUILD_DIR%\%OUTNAME%.pdb" /STACK:"262144","262144" /OPT:REF /OPT:ICF /TLBID:1 /RELEASE /IMPLIB:"%BUILD_DIR%\%OUTNAME%.lib" "%OBJECTFILE%" /ignore:4089 /dll /entry:"_DllMainCRTStartup" /ALIGN:128,4096 /XEX:NO
+"%BINARYPATH%\link.exe" /ERRORREPORT:PROMPT /OUT:"%BUILD_DIR%\%OUTNAME%.exe" /INCREMENTAL:NO /NOLOGO xapilib.lib xboxkrnl.lib /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"%BUILD_DIR%\%OUTNAME%.pdb" /STACK:"262144","262144" /OPT:REF /OPT:ICF /TLBID:1 /RELEASE /IMPLIB:"%BUILD_DIR%\%OUTNAME%.lib" "%OBJECTFILE%" /ignore:4089 /dll /entry:"_DllMainCRTStartup" /ALIGN:128,4096 /XEX:NO
 if errorlevel 1 exit /b 1
 if not exist "%BUILD_DIR%\%OUTNAME%.exe" exit /b 1
 
