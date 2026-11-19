@@ -75,3 +75,10 @@ The importer converts TShark epoch timestamps to ISO 8601 UTC and maps DNS, dest
 When available, the importer also records source IP/port, TShark's `tcp.stream` or `udp.stream` identifier, frame number, frame length, and TCP flags. The analyzer groups rows by capture ID + transport + stream ID and reports packet count, observed source/destination endpoints, flags, and first/last timestamps.
 
 Stream IDs are assigned by Wireshark/TShark within one capture file. They are not game session IDs, player IDs, or proof of a Dark Souls II service. Do not compare stream IDs between different capture files. UDP stream grouping is only a capture-level flow grouping; it does not establish an application session.
+
+
+### Correlation by in-game action
+
+The capture analyzer now groups observed endpoints and transport streams by the exact action label supplied by the researcher (for example, `open-online-menu` or `attempt-coop`). Each group preserves its evidence labels, outcomes, observation count, and time range. A row is not automatically attributed to an action based on timing: the action and visible outcome must be entered from the actual capture session.
+
+The output is a correlation aid, not protocol identification. A connection appearing during an action does not prove that it implements that feature. Compare repeated captures and a control capture (game idle / menu without selecting online) before assigning a service role.
