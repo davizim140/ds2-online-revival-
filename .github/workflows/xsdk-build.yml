@@ -1,0 +1,79 @@
+name: xsdk-build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  XSDK_REF: 9e6de98f6b5d737bce0fecd2864edae94bdd2637
+  XSDK_DIR: ${{ github.workspace }}/.xsdk
+  XSDK_PREFIX: ${{ github.workspace }}/.cache/xsdk-gcc
+  XSDK_WORK: ${{ github.workspace }}/.cache/xsdk-work
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Install xsdk build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential bison flex texinfo libgmp-dev libmpfr-dev libmpc-dev curl xz-utils patch python3 cmake ninja-build git
+
+      - name: Restore cached xsdk toolchain
+        id: xsdk-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .cache/xsdk-gcc
+            .cache/xsdk-work
+          key: xsdk-toolchain-${{ runner.os }}-${{ env.XSDK_REF }}
+
+      - name: Checkout pinned xsdk source
+        run: |
+          git init "$XSDK_DIR"
+          git -C "$XSDK_DIR" remote add origin https://github.com/xenosworks/xsdk.git
+          git -C "$XSDK_DIR" fetch --depth 1 origin "$XSDK_REF"
+          git -C "$XSDK_DIR" checkout --detach FETCH_HEAD
+
+      - name: Build or reuse cached xsdk toolchain
+        run: |
+          mkdir -p "$XSDK_PREFIX" "$XSDK_WORK"
+          cd "$XSDK_DIR"
+          PREFIX="$XSDK_PREFIX" WORK="$XSDK_WORK" JOBS="$(nproc)" bash tools/toolchain/build.sh
+
+      - name: Build xsdk runtime and plugin support library
+        run: |
+          cd "$XSDK_DIR"
+          make -j"$(nproc)" TOOLCHAIN="$XSDK_PREFIX/bin/powerpc-xsdk-elf-"
+
+      - name: Configure DS2 plugin
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_TOOLCHAIN_FILE="$XSDK_DIR/cmake/xsdk.cmake" \
+            -DXSDK_TOOLCHAIN="$XSDK_PREFIX" \
+            -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build DS2 plugin XEX
+        run: cmake --build build --verbose
+
+      - name: Verify plugin artifact
+        run: |
+          test -s build/ds2_online_revival.xex
+          file build/ds2_online_revival.xex
+          sha256sum build/ds2_online_revival.xex
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ds2-online-revival-diagnostic-xex
+          path: build/ds2_online_revival.xex
+          if-no-files-found: error
+          retention-days: 14
