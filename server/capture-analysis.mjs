@@ -44,7 +44,7 @@ export function analyzeCaptureCsv(csv) {
     if (row.local_timestamp) item.timestamps.push(row.local_timestamp);
   }
 
-  const endpointList = [...endpoints.values()].map(item => ({
+  const connections = new Map();\n  for (const row of rows) {\n    const streamId = row.transport_stream_id;\n    const transport = (row.transport ?? "").toUpperCase();\n    if (!streamId || !["TCP", "UDP"].includes(transport)) continue;\n    const key = [row.capture_id, transport, streamId].join("|");\n    let item = connections.get(key);\n    if (!item) {\n      item = { captureId: row.capture_id, transport, streamId, packets: 0, sourceEndpoints: new Set(), destinationEndpoints: new Set(), tcpFlags: new Set(), timestamps: [] };\n      connections.set(key, item);\n    }\n    item.packets++;\n    if (row.source_ip || row.source_port) item.sourceEndpoints.add([row.source_ip || "?", row.source_port || "?"].join(":"));\n    if (row.destination_ip || row.destination_port) item.destinationEndpoints.add([row.destination_ip || "?", row.destination_port || "?"].join(":"));\n    if (row.tcp_flags) item.tcpFlags.add(row.tcp_flags);\n    if (row.local_timestamp) item.timestamps.push(row.local_timestamp);\n  }\n\n  const connectionList = [...connections.values()].map(item => {\n    item.timestamps.sort();\n    return { ...item, sourceEndpoints: [...item.sourceEndpoints].sort(), destinationEndpoints: [...item.destinationEndpoints].sort(), tcpFlags: [...item.tcpFlags].sort(), firstSeen: item.timestamps[0] ?? null, lastSeen: item.timestamps.at(-1) ?? null };\n  });\n\n  const endpointList = [...endpoints.values()].map(item => ({
     ...item,
     evidenceLabels: [...item.evidenceLabels].sort(),
     actions: [...item.actions].sort(),
