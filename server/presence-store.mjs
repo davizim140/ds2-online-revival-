@@ -24,14 +24,15 @@ export class PresenceStore {
       throw new RangeError("presence fields exceed their maximum length");
     }
 
+    const key = presenceKey.trim();
     this.#expire();
-    if (!this.#records.has(presenceKey) && this.#records.size >= this.maxPresences) {
+    if (!this.#records.has(key) && this.#records.size >= this.maxPresences) {
       throw new RangeError("presence capacity reached");
     }
 
     const now = this.now();
     const record = Object.freeze({
-      presenceKey: presenceKey.trim(),
+      presenceKey: key,
       world: world.trim(),
       area: area.trim(),
       activity: activity.trim(),
