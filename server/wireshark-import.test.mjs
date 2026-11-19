@@ -14,7 +14,7 @@ test("imports TShark metadata, direction, stream IDs and packet fields", () => {
   assert.equal(result.rowsImported,2);
   assert.equal(validateObservationsCsv(result.csv).valid,true);
   assert.match(result.csv,/192\.0\.2\.20,51000,203\.0\.113\.8,443,TCP,4,100,128,0x0002/);
-  assert.match(result.csv,/2001:db8::20,52000,2001:db8::8,3074,UDP,,7,101,96/);
+  assert.match(result.csv,/2001:db8::20,52000,2001:db8::8,3074,UDP,7,101,96/);
   assert.match(result.csv,/service\.example/);
 });
 
