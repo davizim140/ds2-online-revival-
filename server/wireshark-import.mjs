@@ -107,7 +107,7 @@ export function importWiresharkTsv(tsv, metadata = {}) {
       tls_certificate_fingerprint: "",
       evidence_label: evidenceLabel,
       outcome: metadata.outcome.trim(),
-      notes_redacted: "Imported from TShark fields export; epoch timestamp normalized to UTC; packet payload excluded."
+      notes_redacted: "Imported from TShark fields export; epoch timestamp normalized to UTC; stream IDs are capture-local; packet payload excluded."
     };
     rows.push(OUTPUT_COLUMNS.map(column => output[column]));
   }
