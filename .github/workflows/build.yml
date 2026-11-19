@@ -1,0 +1,115 @@
+name: DS2 Online Revival - XDK plugin build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "plugin/**"
+      - "third_party/xkelib/**"
+      - "build_plugin.bat"
+      - "xex.xml"
+      - ".github/workflows/build.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Restore XDK toolchain cache
+        id: xdk-cache
+        uses: actions/cache@v4
+        with:
+          path: C:\xdk
+          key: xdk-win32-minimal-v1-${{ runner.os }}
+
+      - name: Download private XDK archive
+        if: steps.xdk-cache.outputs.cache-hit != 'true'
+        shell: pwsh
+        env:
+          XDK_ARCHIVE_URL: ${{ secrets.XDK_ARCHIVE_URL }}
+          XDK_ARCHIVE_TOKEN: ${{ secrets.XDK_ARCHIVE_TOKEN }}
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:XDK_ARCHIVE_URL)) {
+            throw "Missing repository secret XDK_ARCHIVE_URL."
+          }
+          if ([string]::IsNullOrWhiteSpace($env:XDK_ARCHIVE_TOKEN)) {
+            throw "Missing repository secret XDK_ARCHIVE_TOKEN."
+          }
+
+          $archive = Join-Path $env:RUNNER_TEMP "xdk-minimal.zip"
+          $headers = @{ Authorization = "Bearer $env:XDK_ARCHIVE_TOKEN" }
+          Invoke-WebRequest -Uri $env:XDK_ARCHIVE_URL -Headers $headers -OutFile $archive
+
+          $extract = Join-Path $env:RUNNER_TEMP "xdk-extract"
+          New-Item -ItemType Directory -Force -Path $extract | Out-Null
+          Expand-Archive -LiteralPath $archive -DestinationPath $extract -Force
+
+          $root = $extract
+          if (!(Test-Path (Join-Path $root "bin\win32\cl.exe"))) {
+            $candidate = Get-ChildItem -LiteralPath $extract -Directory |
+              Where-Object { Test-Path (Join-Path $_.FullName "bin\win32\cl.exe") } |
+              Select-Object -First 1
+            if ($null -eq $candidate) {
+              throw "ZIP must contain bin\win32\cl.exe, include\xbox and lib\xbox."
+            }
+            $root = $candidate.FullName
+          }
+
+          New-Item -ItemType Directory -Force -Path "C:\xdk" | Out-Null
+          Copy-Item -Path (Join-Path $root "*") -Destination "C:\xdk" -Recurse -Force
+
+      - name: Validate XDK
+        shell: pwsh
+        run: |
+          $required = @(
+            "C:\xdk\bin\win32\cl.exe",
+            "C:\xdk\bin\win32\link.exe",
+            "C:\xdk\bin\win32\imagexex.exe",
+            "C:\xdk\include\xbox\xtl.h",
+            "C:\xdk\include\xbox\xbox_intellisense_platform.h",
+            "C:\xdk\lib\xbox\xboxkrnl.lib",
+            "C:\xdk\lib\xbox\xapilib.lib"
+          )
+          foreach ($file in $required) {
+            if (!(Test-Path $file)) { throw "Missing XDK component: $file" }
+          }
+
+      - name: Configure XDK environment
+        shell: pwsh
+        run: |
+          "XEDK=C:\xdk" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Validate xkelib
+        shell: pwsh
+        run: |
+          $lib = "third_party\xkelib\lib\xkelib.lib"
+          if (!(Test-Path $lib)) {
+            throw "Missing $lib. Add the real xkelib library; it is not part of the XDK ZIP."
+          }
+
+      - name: Build plugin
+        shell: cmd
+        run: call build_plugin.bat
+
+      - name: Validate XEX
+        shell: pwsh
+        run: |
+          $xex = "DS2OnlineRevival.xex"
+          if (!(Test-Path $xex)) { throw "Missing output: $xex" }
+          if ((Get-Item $xex).Length -le 0) { throw "$xex is empty." }
+          Get-Item $xex | Format-List Name, Length
+
+      - name: Upload XEX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DS2OnlineRevival-XEX
+          path: DS2OnlineRevival.xex
+          if-no-files-found: error
+          retention-days: 30
