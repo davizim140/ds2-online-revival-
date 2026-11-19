@@ -67,3 +67,10 @@ Get-Content .\\capture-fields.tsv -Raw | node server/wireshark-import.mjs | Set-
 ```
 
 The importer converts TShark epoch timestamps to ISO 8601 UTC and maps DNS, destination IP, destination port, transport, and TLS SNI when present. It does not infer service ownership or protocol meaning. Review and redact the resulting CSV before committing it. The raw capture and TSV should remain private.
+
+
+### Connection grouping
+
+When available, the importer also records source IP/port, TShark's `tcp.stream` or `udp.stream` identifier, frame number, frame length, and TCP flags. The analyzer groups rows by capture ID + transport + stream ID and reports packet count, observed source/destination endpoints, flags, and first/last timestamps.
+
+Stream IDs are assigned by Wireshark/TShark within one capture file. They are not game session IDs, player IDs, or proof of a Dark Souls II service. Do not compare stream IDs between different capture files. UDP stream grouping is only a capture-level flow grouping; it does not establish an application session.
