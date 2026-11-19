@@ -1,1 +1,1 @@
-capture_id,game_build,title_id,media_id,title_update,action,local_timestamp,dns_name,destination_ip,destination_port,transport,tls_metadata,evidence_label,outcome,notes_redacted
+capture_id,game_build,title_id,media_id,title_update,console_capture_point,action,local_timestamp,dns_query,dns_result,destination_ip,destination_port,transport,connection_start,connection_end,tls_sni,tls_certificate_subject,tls_certificate_fingerprint,evidence_label,outcome,notes_redacted
