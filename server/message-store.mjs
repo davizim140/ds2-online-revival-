@@ -6,12 +6,34 @@ export class MessageStore {
   #messages = [];
   #nextId = 1;
 
-  constructor({ now = () => Date.now(), ttlMs = DEFAULT_TTL_MS } = {}) {
+  constructor({ now = () => Date.now(), ttlMs = DEFAULT_TTL_MS, initialMessages = [], onChange = () => {} } = {}) {
     if (!Number.isSafeInteger(ttlMs) || ttlMs <= 0) {
       throw new TypeError("ttlMs must be a positive safe integer");
     }
+    if (!Array.isArray(initialMessages) || typeof onChange !== "function") {
+      throw new TypeError("initialMessages must be an array and onChange must be a function");
+    }
+    for (const item of initialMessages) {
+      if (!item || !Number.isSafeInteger(item.id) || item.id < 1 ||
+          !["world", "area", "author", "text"].every(key => typeof item[key] === "string") ||
+          !Number.isFinite(item.createdAt) || !Number.isFinite(item.expiresAt) ||
+          !Number.isSafeInteger(item.rating)) {
+        throw new TypeError("invalid persisted message record");
+      }
+    }
     this.now = now;
     this.ttlMs = ttlMs;
+    this.onChange = onChange;
+    this.#messages = initialMessages.map(item => Object.freeze({ ...item }));
+    this.#nextId = this.#messages.reduce((max, item) => Math.max(max, item.id), 0) + 1;
+  }
+
+  exportMessages() {
+    return this.#messages.map(item => ({ ...item }));
+  }
+
+  #changed() {
+    this.onChange(this.exportMessages());
   }
 
   publish({ world, area, author, text }) {
@@ -35,6 +57,7 @@ export class MessageStore {
       rating: 0
     });
     this.#messages.push(message);
+    this.#changed();
     return message;
   }
 
@@ -46,7 +69,9 @@ export class MessageStore {
       throw new RangeError("limit must be an integer from 1 to 100");
     }
     const now = this.now();
+    const previousLength = this.#messages.length;
     this.#messages = this.#messages.filter(item => item.expiresAt > now);
+    if (this.#messages.length !== previousLength) this.#changed();
     return this.#messages
       .filter(item => item.world === world && item.area === area)
       .slice(-limit)
@@ -61,11 +86,14 @@ export class MessageStore {
     if (index < 0) return false;
     const current = this.#messages[index];
     this.#messages[index] = Object.freeze({ ...current, rating: current.rating + delta });
+    this.#changed();
     return true;
   }
 
   get size() {
+    const previousLength = this.#messages.length;
     this.#messages = this.#messages.filter(item => item.expiresAt > this.now());
+    if (this.#messages.length !== previousLength) this.#changed();
     return this.#messages.length;
   }
 }
