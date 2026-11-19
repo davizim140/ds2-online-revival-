@@ -52,7 +52,7 @@ jobs:
       - name: Build xsdk runtime and plugin support library
         run: |
           cd "$XSDK_DIR"
-          make -j"$(nproc)" TOOLCHAIN="$XSDK_PREFIX/bin/powerpc-xsdk-elf-" build/libxsdk_plugin.a
+          make -j"$(nproc)" TOOLCHAIN="$XSDK_PREFIX/bin/powerpc-xsdk-elf-" build/libxsdk.a build/libxsdk_plugin.a
 
       - name: Configure DS2 plugin
         run: |
