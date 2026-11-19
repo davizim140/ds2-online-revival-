@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 
 const header = "capture_id,game_build,title_id,media_id,title_update,console_capture_point,action,local_timestamp,dns_query,dns_result,source_ip,source_port,destination_ip,destination_port,transport,transport_stream_id,frame_number,frame_length,tcp_flags,connection_start,connection_end,tls_sni,tls_certificate_subject,tls_certificate_fingerprint,evidence_label,outcome,notes_redacted";
 const row = (capture, action, ip, port) =>
-  [capture,"base","465307E4","","none","router",action,"2026-11-19T10:00:00Z","","","192.0.2.50","50000",ip,port,"TCP","1","1","128","0x0018","","","","","","observed","timeout","redacted"].join(",");
+  [capture,"base","465307E4","","none","router",action,"2026-11-19T10:00:00Z","","","192.0.2.50","50000",ip,port,"TCP","1","1","128","0x0018","","","","","observed","timeout","redacted"].join(",");
 const csv = (...rows) => [header, ...rows].join("\n");
 
 test("CLI emits a JSON comparison report for two valid files", async () => {
