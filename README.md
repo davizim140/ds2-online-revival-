@@ -61,7 +61,7 @@ Os serviços online oficiais das versões Xbox 360 e PS3 foram encerrados em 31 
 - [ ] Capturar o fluxo de rede do jogo em uma tentativa controlada.
 - [ ] Identificar o bootstrap/login e o protocolo real do cliente Xbox 360.
 - [x] Criar e cobrir com testes o modelo interno de mensagens (não conectado ao cliente Xbox 360).
-- [x] Criar API HTTP local de desenvolvimento e testes de integração (não conectada ao cliente Xbox 360).
+- [x] Criar API HTTP local de desenvolvimento e testes de integração (não conectada ao cliente Xbox 360).\n- [x] Persistir o modelo de mensagens localmente em JSON para sobreviver a reinicializações do processo.
 - [ ] Implementar o adaptador de protocolo Xbox 360 após obter evidências reproduzíveis.
 - [ ] Integrar o primeiro serviço privado ao protocolo confirmado.
 - [ ] Retomar a compilação do plugin quando houver toolchain XDK legítima disponível.
