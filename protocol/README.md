@@ -82,3 +82,10 @@ Stream IDs are assigned by Wireshark/TShark within one capture file. They are no
 The capture analyzer now groups observed endpoints and transport streams by the exact action label supplied by the researcher (for example, `open-online-menu` or `attempt-coop`). Each group preserves its evidence labels, outcomes, observation count, and time range. A row is not automatically attributed to an action based on timing: the action and visible outcome must be entered from the actual capture session.
 
 The output is a correlation aid, not protocol identification. A connection appearing during an action does not prove that it implements that feature. Compare repeated captures and a control capture (game idle / menu without selecting online) before assigning a service role.
+
+
+### Comparing a control capture with an online-action capture
+
+Use `server/capture-diff.mjs` to compare two sanitized CSV files. The baseline should be a control capture (for example, the game idle at the title screen); the comparison capture should record one exact action (for example, opening the online menu). The report lists destination metadata shared by both captures, newly present in the comparison, and absent from it.
+
+The comparison intentionally ignores TShark stream IDs because they are local to each capture file. Newly present traffic is not automatically Dark Souls II traffic: console background services, Xbox Live, DNS, and unrelated network activity can also change. Repeat the same controlled action and compare against multiple control captures before drawing conclusions.
