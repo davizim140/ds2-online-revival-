@@ -6,7 +6,7 @@ const REQUIRED_COLUMNS = [
   "outcome",
 ];
 
-function parseCsvLine(line) {
+export function parseCsvLine(line) {
   const fields = [];
   let value = "";
   let quoted = false;
