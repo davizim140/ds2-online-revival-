@@ -14,7 +14,8 @@ Reconstruir, com base no protocolo realmente utilizado pelo jogo de Xbox 360, os
 - [Build identification](docs/BUILD_IDENTIFICATION.md) — identidade da cópia Xbox 360.
 - [Service architecture](docs/SERVICE_ARCHITECTURE.md) — componentes e critérios para cada recurso.
 - [Protocol evidence workspace](protocol/README.md) — regras e modelo para registrar capturas.
-- [Passive capture procedure](docs/CAPTURE_PROCEDURE.md) — sequência de captura sem alterar o console ou os arquivos do jogo.
+- [Passive capture procedure](docs/CAPTURE_PROCEDURE.md) — sequência de captura controlada.
+- [Router capture options](docs/ROUTER_CAPTURE_OPTIONS.md) — opções de captura pela rede existente.
 
 A arquitetura é condicionada a evidências: nenhum endpoint, porta ou formato de pacote será inventado.
 
@@ -60,6 +61,7 @@ Os serviços online oficiais das versões Xbox 360 e PS3 foram encerrados em 31 
 - [x] Criar modelo para registrar observações de rede sem publicar segredos.
 - [ ] Identificar a versão exata do jogo e do Title Update.
 - [x] Documentar procedimento seguro e modelo de metadados para captura passiva.
+- [x] Documentar opções de captura por roteador ou switch.
 - [ ] Capturar o fluxo de rede do jogo em uma tentativa controlada.
 - [ ] Identificar o bootstrap/login e o protocolo real do cliente Xbox 360.
 - [x] Criar e cobrir com testes o modelo interno de mensagens (não conectado ao cliente Xbox 360).
