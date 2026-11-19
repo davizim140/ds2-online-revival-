@@ -7,16 +7,16 @@ import { compareCaptureCsvs } from "./capture-diff.mjs";
 
 export async function main(args = process.argv.slice(2), io = process) {
   if (args.length !== 2 || args.some(value => !value || value.startsWith("-"))) {
-    io.stderr.write("Usage: node server/capture-diff-cli.mjs <baseline.csv> <comparison.csv>\\n");
+    io.stderr.write("Usage: node server/capture-diff-cli.mjs <baseline.csv> <comparison.csv>\n");
     return 2;
   }
   try {
     const [baseline, comparison] = await Promise.all(args.map(path => readFile(resolve(path), "utf8")));
     const report = compareCaptureCsvs(baseline, comparison);
-    io.stdout.write(JSON.stringify(report, null, 2) + "\\n");
+    io.stdout.write(JSON.stringify(report, null, 2) + "\n");
     return 0;
   } catch (error) {
-    io.stderr.write("Capture comparison failed: " + error.message + (error.validation?.errors?.length ? " (" + error.validation.errors.join("; ") + ")" : "") + "\\n");
+    io.stderr.write("Capture comparison failed: " + error.message + (error.validation?.errors?.length ? " (" + error.validation.errors.join("; ") + ")" : "") + "\n");
     return 1;
   }
 }
