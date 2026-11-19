@@ -1,40 +1,26 @@
-// Summarizes sanitized Xbox 360 capture metadata. It does not inspect payloads or infer protocol semantics.
+// Summarizes sanitized capture metadata; transport streams are not game sessions.
 import { parseCsvLine, validateObservationsCsv } from "./protocol-observations.mjs";
-
-const ENDPOINT_FIELDS = ["dns_query", "destination_ip", "destination_port", "transport"];
+const ENDPOINT_FIELDS = ["dns_query","destination_ip","destination_port","transport"];
 
 export function analyzeCaptureCsv(csv) {
   const validation = validateObservationsCsv(csv);
-  if (!validation.valid) {
-    const error = new Error("capture CSV failed validation");
-    error.validation = validation;
-    throw error;
-  }
-
+  if (!validation.valid) { const error = new Error("capture CSV failed validation"); error.validation = validation; throw error; }
   const lines = csv.replace(/^\uFEFF/, "").split(/\r?\n/).filter(line => line.trim() !== "");
   const headers = parseCsvLine(lines[0]);
   const rows = lines.slice(1).map(line => {
     const values = parseCsvLine(line);
     return Object.fromEntries(headers.map((header, index) => [header, (values[index] ?? "").trim()]));
   });
-
   const endpoints = new Map();
   for (const row of rows) {
     if (!ENDPOINT_FIELDS.some(field => row[field])) continue;
     const key = ENDPOINT_FIELDS.map(field => row[field] ?? "").join("|");
     let item = endpoints.get(key);
     if (!item) {
-      item = {
-        dnsQuery: row.dns_query || null,
-        destinationIp: row.destination_ip || null,
+      item = { dnsQuery: row.dns_query || null, destinationIp: row.destination_ip || null,
         destinationPort: row.destination_port ? Number(row.destination_port) : null,
-        transport: row.transport ? row.transport.toUpperCase() : null,
-        observations: 0,
-        evidenceLabels: new Set(),
-        actions: new Set(),
-        outcomes: new Set(),
-        timestamps: []
-      };
+        transport: row.transport ? row.transport.toUpperCase() : null, observations: 0,
+        evidenceLabels: new Set(), actions: new Set(), outcomes: new Set(), timestamps: [] };
       endpoints.set(key, item);
     }
     item.observations++;
@@ -43,25 +29,40 @@ export function analyzeCaptureCsv(csv) {
     if (row.outcome) item.outcomes.add(row.outcome);
     if (row.local_timestamp) item.timestamps.push(row.local_timestamp);
   }
-
-  const connections = new Map();\n  for (const row of rows) {\n    const streamId = row.transport_stream_id;\n    const transport = (row.transport ?? "").toUpperCase();\n    if (!streamId || !["TCP", "UDP"].includes(transport)) continue;\n    const key = [row.capture_id, transport, streamId].join("|");\n    let item = connections.get(key);\n    if (!item) {\n      item = { captureId: row.capture_id, transport, streamId, packets: 0, sourceEndpoints: new Set(), destinationEndpoints: new Set(), tcpFlags: new Set(), timestamps: [] };\n      connections.set(key, item);\n    }\n    item.packets++;\n    if (row.source_ip || row.source_port) item.sourceEndpoints.add([row.source_ip || "?", row.source_port || "?"].join(":"));\n    if (row.destination_ip || row.destination_port) item.destinationEndpoints.add([row.destination_ip || "?", row.destination_port || "?"].join(":"));\n    if (row.tcp_flags) item.tcpFlags.add(row.tcp_flags);\n    if (row.local_timestamp) item.timestamps.push(row.local_timestamp);\n  }\n\n  const connectionList = [...connections.values()].map(item => {\n    item.timestamps.sort();\n    return { ...item, sourceEndpoints: [...item.sourceEndpoints].sort(), destinationEndpoints: [...item.destinationEndpoints].sort(), tcpFlags: [...item.tcpFlags].sort(), firstSeen: item.timestamps[0] ?? null, lastSeen: item.timestamps.at(-1) ?? null };\n  });\n\n  const endpointList = [...endpoints.values()].map(item => ({
-    ...item,
-    evidenceLabels: [...item.evidenceLabels].sort(),
-    actions: [...item.actions].sort(),
-    outcomes: [...item.outcomes].sort(),
-    firstSeen: item.timestamps.sort()[0] ?? null,
-    lastSeen: item.timestamps.at(-1) ?? null
-  }));
-
+  const endpointList = [...endpoints.values()].map(item => {
+    item.timestamps.sort();
+    return { ...item, evidenceLabels: [...item.evidenceLabels].sort(), actions: [...item.actions].sort(),
+      outcomes: [...item.outcomes].sort(), firstSeen: item.timestamps[0] ?? null, lastSeen: item.timestamps.at(-1) ?? null };
+  });
+  const streams = new Map();
+  for (const row of rows) {
+    const streamId = row.transport_stream_id;
+    const transport = (row.transport ?? "").toUpperCase();
+    if (!streamId || !["TCP","UDP"].includes(transport)) continue;
+    const key = [row.capture_id, transport, streamId].join("|");
+    let item = streams.get(key);
+    if (!item) {
+      item = { captureId: row.capture_id, transport, streamId, packets: 0,
+        sourceEndpoints: new Set(), destinationEndpoints: new Set(), tcpFlags: new Set(), timestamps: [] };
+      streams.set(key, item);
+    }
+    item.packets++;
+    if (row.source_ip || row.source_port) item.sourceEndpoints.add([row.source_ip || "?", row.source_port || "?"].join(":"));
+    if (row.destination_ip || row.destination_port) item.destinationEndpoints.add([row.destination_ip || "?", row.destination_port || "?"].join(":"));
+    if (row.tcp_flags) item.tcpFlags.add(row.tcp_flags);
+    if (row.local_timestamp) item.timestamps.push(row.local_timestamp);
+  }
+  const connectionList = [...streams.values()].map(item => {
+    item.timestamps.sort();
+    return { ...item, sourceEndpoints: [...item.sourceEndpoints].sort(),
+      destinationEndpoints: [...item.destinationEndpoints].sort(), tcpFlags: [...item.tcpFlags].sort(),
+      firstSeen: item.timestamps[0] ?? null, lastSeen: item.timestamps.at(-1) ?? null };
+  });
   return {
-    rowsAnalyzed: rows.length,
-    endpointCount: endpointList.length,
-    evidenceCounts: Object.fromEntries(
-      ["observed", "correlated", "hypothesis", "rejected"].map(label => [
-        label, rows.filter(row => row.evidence_label === label).length
-      ])
-    ),
-    endpoints: endpointList,
-    interpretation: "Metadata summary only. Endpoint ownership, service purpose, handshake, and game-protocol compatibility remain unproven."
+    rowsAnalyzed: rows.length, endpointCount: endpointList.length, endpoints: endpointList,
+    connectionCount: connectionList.length, connections: connectionList,
+    evidenceCounts: Object.fromEntries(["observed","correlated","hypothesis","rejected"].map(label =>
+      [label, rows.filter(row => row.evidence_label === label).length])),
+    interpretation: "Metadata summary only. A transport stream is not a gameplay session; endpoint ownership, service purpose, and protocol compatibility remain unproven."
   };
 }
