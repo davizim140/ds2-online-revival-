@@ -7,7 +7,6 @@ on:
       - main
     paths:
       - "plugin/**"
-      - "third_party/xkelib/**"
       - "build_plugin.bat"
       - "xex.xml"
       - ".github/workflows/build.yml"
@@ -85,14 +84,6 @@ jobs:
         shell: pwsh
         run: |
           "XEDK=C:\xdk" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
-
-      - name: Validate xkelib
-        shell: pwsh
-        run: |
-          $lib = "third_party\xkelib\lib\xkelib.lib"
-          if (!(Test-Path $lib)) {
-            throw "Missing $lib. Add the real xkelib library; it is not part of the XDK ZIP."
-          }
 
       - name: Build plugin
         shell: cmd
