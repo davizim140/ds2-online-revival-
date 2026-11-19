@@ -16,7 +16,7 @@ export async function main(args = process.argv.slice(2), io = process) {
     io.stdout.write(JSON.stringify(report, null, 2) + "\\n");
     return 0;
   } catch (error) {
-    io.stderr.write("Capture comparison failed: " + error.message + "\\n");
+    io.stderr.write("Capture comparison failed: " + error.message + (error.validation?.errors?.length ? " (" + error.validation.errors.join("; ") + ")" : "") + "\\n");
     return 1;
   }
 }
