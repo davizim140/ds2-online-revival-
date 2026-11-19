@@ -50,8 +50,9 @@ Example TShark export (run against a capture kept locally):
 tshark -r capture.pcapng -T fields -E header=y -E separator=/t -E quote=d -E occurrence=f \
   -e frame.time_epoch \
   -e dns.qry.name \
-  -e ip.dst -e ipv6.dst \
-  -e tcp.dstport -e udp.dstport \
+  -e ip.src -e ipv6.src -e ip.dst -e ipv6.dst \
+  -e tcp.srcport -e udp.srcport -e tcp.dstport -e udp.dstport \
+  -e tcp.stream -e udp.stream -e frame.number -e frame.len -e tcp.flags \
   -e tls.handshake.extensions_server_name > capture-fields.tsv
 ```
 
