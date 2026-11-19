@@ -22,7 +22,9 @@ A arquitetura é condicionada a evidências: nenhum endpoint, porta ou formato d
 ## Estrutura
 
 - `plugin/` — código C++ do plugin Xbox 360.
-- `server/` — futuros serviços privados.
+- `server/message-store.mjs` — modelo interno inicial para publicação, consulta, avaliação e expiração de mensagens; ainda não é uma API compatível com o protocolo do jogo.
+- `server/message-store.test.mjs` — testes automatizados do modelo de mensagens.
+- `.github/workflows/server-tests.yml` — CI independente do XDK para executar os testes Node.js.
 - `protocol/` — documentação de formatos e fluxos observados.
 - `docs/` — pesquisa, compatibilidade e instalação.
 - `tests/` — testes automatizados.
@@ -56,7 +58,9 @@ Os serviços online oficiais das versões Xbox 360 e PS3 foram encerrados em 31 
 - [ ] Identificar a versão exata do jogo e do Title Update.
 - [ ] Capturar o fluxo de rede do jogo em uma tentativa controlada.
 - [ ] Identificar o bootstrap/login e o protocolo real do cliente Xbox 360.
-- [ ] Implementar e testar o primeiro serviço privado.
+- [x] Criar e cobrir com testes o modelo interno de mensagens (não conectado ao cliente Xbox 360).
+- [ ] Implementar o adaptador de protocolo Xbox 360 após obter evidências reproduzíveis.
+- [ ] Integrar o primeiro serviço privado ao protocolo confirmado.
 - [ ] Retomar a compilação do plugin quando houver toolchain XDK legítima disponível.
 - [ ] Validar carregamento e desligamento seguro no RGH.
 
