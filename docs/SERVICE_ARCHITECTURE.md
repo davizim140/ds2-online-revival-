@@ -56,3 +56,10 @@ A feature is not considered implemented until all gates pass:
 - Reusing PC/SotFS protocol values without Xbox 360 evidence.
 - Replacing Xbox Live authentication or representing the project as an Xbox Live service.
 - Claiming gameplay relay, matchmaking, or online restoration based only on a loaded plugin.
+
+
+## Internal presence model (development only)
+
+`server/presence-store.mjs` now provides an in-process presence registry with heartbeat refresh, world/area filtering, TTL expiry, removal, and capacity limits. Its `presenceKey` is an opaque internal key; it is not an Xbox Live XUID or a proven game identity field.
+
+This model is not exposed to the Xbox 360 client and does not establish the game's real heartbeat interval, area identifiers, activity values, identity rules, or wire format. Those values must be mapped only after protocol evidence is collected. It is a domain-model building block, not a working online feature.
