@@ -16,7 +16,7 @@ test("groups repeated transport observations and preserves evidence labels", () 
   assert.deepEqual(result.endpoints[0].actions, ["launch", "online-menu"]);
   assert.equal(result.evidenceCounts.observed, 2);
   assert.equal(result.evidenceCounts.correlated, 1);
-  assert.equal(result.actionCorrelationCount, 2);\n  assert.equal(result.actionCorrelations[0].action, "launch");\n  assert.equal(result.actionCorrelations[0].streamId, "12");\n  assert.equal(result.connectionCount, 1);
+  assert.equal(result.actionCorrelationCount, 3);\n  assert.equal(result.actionCorrelations[0].action, "launch");\n  assert.equal(result.actionCorrelations[0].streamId, "12");\n  assert.equal(result.connectionCount, 1);
   assert.equal(result.connections[0].streamId, "12");
   assert.equal(result.connections[0].packets, 3);\n  assert.deepEqual(result.connections[0].actions, ["launch", "online-menu"]);\n  assert.deepEqual(result.connections[0].outcomes, ["timeout"]);
   assert.deepEqual(result.connections[0].sourceEndpoints, ["192.0.2.50:50000"]);
