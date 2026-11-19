@@ -31,6 +31,8 @@ A arquitetura é condicionada a evidências: nenhum endpoint, porta ou formato d
 - `server/presence-store.test.mjs` — testes automatizados do modelo de presença.
 - `server/sign-store.mjs` — registro interno temporário de sinais para coop, invasão e duelo.
 - `server/sign-store.test.mjs` — testes automatizados do registro de sinais.
+- `server/world-event-store.mjs` — armazenamento interno temporário de eventos de manchas de sangue e shades.
+- `server/world-event-store.test.mjs` — testes automatizados do registro de eventos.
 - `server/protocol-observations.mjs` — validação estrutural do CSV de evidências de protocolo.
 - `server/protocol-observations.test.mjs` — testes do validador de observações.
 - `server/message-api.test.mjs` — testes HTTP de saúde, publicação, consulta, avaliação, JSON inválido e rota inexistente.
@@ -73,6 +75,7 @@ Os serviços online oficiais das versões Xbox 360 e PS3 foram encerrados em 31 
 - [x] Criar e cobrir com testes o modelo interno de mensagens (não conectado ao cliente Xbox 360).
 - [x] Criar modelo interno de presença com expiração e testes (não conectado ao cliente Xbox 360).
 - [x] Criar registro interno de sinais para categorias candidatas de coop/invasão/duelo (não conectado ao cliente Xbox 360).
+- [x] Criar registro interno de eventos para manchas de sangue e shades (payload opaco; não conectado ao cliente Xbox 360).
 - [x] Criar validador automatizado para registros CSV de evidências de protocolo.
 - [x] Criar API HTTP local de desenvolvimento e testes de integração (não conectada ao cliente Xbox 360).
 - [x] Persistir o modelo de mensagens localmente em JSON para sobreviver a reinicializações do processo.
