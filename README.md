@@ -13,7 +13,7 @@ Reconstruir, com base no protocolo realmente utilizado pelo jogo de Xbox 360, os
 - [Xbox 360 protocol research](docs/XBOX360_PROTOCOL_RESEARCH.md) — fatos confirmados e lacunas.
 - [Build identification](docs/BUILD_IDENTIFICATION.md) — identidade da cópia Xbox 360.
 - [Service architecture](docs/SERVICE_ARCHITECTURE.md) — componentes e critérios para cada recurso.
-- [Protocol evidence workspace](protocol/README.md) — regras e modelo para registrar capturas.\n- [Passive capture procedure](docs/CAPTURE_PROCEDURE.md) — sequência de captura sem modificar o console ou o jogo.
+- [Protocol evidence workspace](protocol/README.md) — regras e modelo para registrar capturas.\n- [Passive capture procedure](docs/CAPTURE_PROCEDURE.md) — sequência de captura sem alterar o console ou os arquivos do jogo.
 
 A arquitetura é condicionada a evidências: nenhum endpoint, porta ou formato de pacote será inventado.
 
