@@ -70,3 +70,10 @@ This model is not exposed to the Xbox 360 client and does not establish the game
 `server/sign-store.mjs` provides a temporary registry for three candidate sign categories: `coop`, `invasion`, and `duel`. It supports publication, filtering by category/world/area, TTL expiry, capacity limits, and owner-key revocation.
 
 These category names are project-side abstractions, not confirmed Xbox 360 packet values or proof of the original game's matchmaking rules. The registry is not connected to the console, does not perform matchmaking or session handoff, and does not relay gameplay traffic. Its metadata and filtering rules must be replaced or adapted when actual client evidence becomes available.
+
+
+## Internal bloodstain/shade event model (development only)
+
+`server/world-event-store.mjs` stores two internal event categories, `bloodstain` and `shade`, with world/area filtering, bounded JSON payloads, TTL expiry, capacity limits, and owner-key removal. The payload is deliberately opaque: it does not claim to encode the game's bloodstain replay or ghost animation format.
+
+The default five-minute TTL and category labels are development defaults, not measured game behavior. This store is not connected to the Xbox 360 client and does not yet render ghosts, replay deaths, or exchange events with another console. Actual payload schema, timing, eligibility, and retrieval behavior require captures from the original Xbox 360 client.
