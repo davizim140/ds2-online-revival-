@@ -23,6 +23,6 @@ test("compares endpoint metadata without comparing capture-local stream IDs", ()
 });
 
 test("rejects invalid baseline or comparison CSV", () => {
-  assert.throws(() => compareCaptureCsvs(header, csv(row("online","menu","192.0.2.10","443"))), /failed validation/);
+  assert.throws(() => compareCaptureCsvs(header.replace("outcome", "missing_outcome"), csv(row("online","menu","192.0.2.10","443"))), /failed validation/);
   assert.throws(() => compareCaptureCsvs(csv(row("idle","idle","192.0.2.10","443")), ""), /failed validation/);
 });
