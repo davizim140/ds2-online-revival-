@@ -63,3 +63,10 @@ A feature is not considered implemented until all gates pass:
 `server/presence-store.mjs` now provides an in-process presence registry with heartbeat refresh, world/area filtering, TTL expiry, removal, and capacity limits. Its `presenceKey` is an opaque internal key; it is not an Xbox Live XUID or a proven game identity field.
 
 This model is not exposed to the Xbox 360 client and does not establish the game's real heartbeat interval, area identifiers, activity values, identity rules, or wire format. Those values must be mapped only after protocol evidence is collected. It is a domain-model building block, not a working online feature.
+
+
+## Internal matchmaking-sign model (development only)
+
+`server/sign-store.mjs` provides a temporary registry for three candidate sign categories: `coop`, `invasion`, and `duel`. It supports publication, filtering by category/world/area, TTL expiry, capacity limits, and owner-key revocation.
+
+These category names are project-side abstractions, not confirmed Xbox 360 packet values or proof of the original game's matchmaking rules. The registry is not connected to the console, does not perform matchmaking or session handoff, and does not relay gameplay traffic. Its metadata and filtering rules must be replaced or adapted when actual client evidence becomes available.
