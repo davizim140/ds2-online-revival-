@@ -23,7 +23,8 @@ A arquitetura é condicionada a evidências: nenhum endpoint, porta ou formato d
 
 ## Estrutura
 
-- `plugin/` — código C++ do plugin Xbox 360.
+- `plugin/plugin.c` — entrada C compilada pelo CMake/XSDK no workflow atual; permanece apenas diagnóstico, sem hooks ou redirecionamento.
+- `plugin/ds2_plugin.cpp` — stub C++ legado, não é a fonte usada pelo CMake atual.
 - `server/message-store.mjs` — modelo interno para publicação, consulta, avaliação e expiração de mensagens; ainda não é uma API compatível com o protocolo do jogo.
 - `server/message-api.mjs` — API HTTP local de desenvolvimento, limitada a loopback quando iniciada por `listenLocal`; não é o protocolo do Xbox 360.
 - `server/message-store.test.mjs` — testes automatizados do modelo de mensagens.
@@ -40,15 +41,18 @@ A arquitetura é condicionada a evidências: nenhum endpoint, porta ou formato d
 - `protocol/` — documentação de formatos e fluxos observados.
 - `docs/` — pesquisa, compatibilidade e instalação.
 - `tests/` — testes automatizados.
-- `.github/workflows/build.yml` — compilação Windows com XDK no GitHub Actions.
-- `build_plugin.bat` — compilação PowerPC, linkagem e empacotamento XEX.
-- `xex.xml` — configuração XEXDLL com `<sysdll/>`.
+- `.github/workflows/xsdk-build.yml` — compila a toolchain XSDK fixada por commit, reutiliza cache do compilador e tenta gerar o XEX no GitHub Actions.
+- `.github/workflows/server-tests.yml` — executa os testes Node.js sem depender da toolchain Xbox.
+- `CMakeLists.txt` — configura o plugin usando `xsdk_add_plugin`; o endereço-base ainda precisa de validação no console.
+- `xex.xml` e `build_plugin.bat` — arquivos legados; não são usados pelo workflow XSDK atual.
 
 ## Compilação do plugin
 
-O workflow de XEX usa ferramentas do XDK oficial. **No momento, essa etapa está bloqueada**, porque o projeto não tem uma cópia legítima do XDK nem um cache previamente abastecido. O workflow atual espera os secrets `XDK_ARCHIVE_URL` e `XDK_ARCHIVE_TOKEN` para baixar um arquivo privado autorizado.
+O workflow atual usa o projeto **XSDK** (não o XDK oficial) em Linux no GitHub Actions. A revisão do XSDK é fixada em `XSDK_REF`, e a toolchain PowerPC é armazenada no cache do Actions. Não são necessários os secrets `XDK_ARCHIVE_URL` e `XDK_ARCHIVE_TOKEN` para esse fluxo.
 
-Não é necessário configurar esses secrets para avançar na pesquisa de protocolo. Não há XEX compilado/verificado disponível neste estágio.
+O primeiro build chegou a compilar a toolchain e `libxsdk_plugin.a`, mas o teste de compilador do CMake falhou porque `libxsdk.a` não havia sido construída no diretório esperado. O workflow foi ajustado para solicitar as duas bibliotecas (`build/libxsdk.a` e `build/libxsdk_plugin.a`); a nova execução ainda precisa confirmar a correção.
+
+**Não há XEX confirmado como compilado ou testado no console.** Mesmo após um build bem-sucedido, o plugin continua sendo apenas diagnóstico: não restaura login, mensagens, presença ou multiplayer.
 
 ## Princípios de segurança
 
